@@ -22,7 +22,7 @@ public class NewsController {
         try {
             newsService.createNote(note, typeId);
             return ResponseEntity.ok().body("Новость успешно добавлена в базу данных.");
-        } catch (NewsNameAlreadyExistException | NewsDescriptionAlreadyUsesException e) {
+        } catch (NewsNameAlreadyExistException | NewsDescriptionAlreadyUsesException | TypeNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Произошла непредвиденная ошибка при добавлении новости!");
@@ -58,7 +58,24 @@ public class NewsController {
         } catch (NewsNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Произошла непредвиденная ошибка при поиске типа!");
+            return ResponseEntity.badRequest().body("Произошла непредвиденная ошибка при поиске новости!");
+        }
+    }
+
+    @GetMapping("/showAll")
+    public ResponseEntity<?> showAllNews() {
+        try {
+            List<NewsEntity> newsEntities = newsService.showAllNews();
+            List<News> news = new ArrayList<>();
+            for (NewsEntity note : newsEntities) {
+                news.add(News.toModel(note));
+            }
+
+            return ResponseEntity.ok(news);
+        } catch (NewsListIsEmptyException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Произошла непредвиденная ошибка при выводе всех новостей!");
         }
     }
 

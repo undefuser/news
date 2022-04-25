@@ -11,4 +11,5 @@ public interface NewsRepository extends CrudRepository<NewsEntity, Long> {
     Optional<NewsEntity> findByHeadline(String headline);
     Optional<NewsEntity> findByDescription(String description);
     List<NewsEntity> findAllByNewsType(TypeEntity newsType);
+    List<NewsEntity> findAll();
 }

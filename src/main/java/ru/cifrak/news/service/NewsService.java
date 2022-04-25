@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.cifrak.news.entity.NewsEntity;
 import ru.cifrak.news.entity.TypeEntity;
-import ru.cifrak.news.exception.NewsDescriptionAlreadyUsesException;
-import ru.cifrak.news.exception.NewsNameAlreadyExistException;
-import ru.cifrak.news.exception.NewsNotFoundException;
-import ru.cifrak.news.exception.TypeNotFoundException;
+import ru.cifrak.news.exception.*;
 import ru.cifrak.news.repository.NewsRepository;
 import ru.cifrak.news.repository.TypeRepository;
 
@@ -25,7 +22,7 @@ public class NewsService {
     private TypeRepository typeRepository;
 
     public void createNote(NewsEntity note, Long typeId) throws NewsNameAlreadyExistException,
-                                                                NewsDescriptionAlreadyUsesException {
+            NewsDescriptionAlreadyUsesException, TypeNotFoundException {
         if (newsRepository.findByHeadline(note.getHeadline()).isPresent()) {
             throw new NewsNameAlreadyExistException("Новость с указанным именем уже существует!");
         }
@@ -34,8 +31,11 @@ public class NewsService {
             throw new NewsDescriptionAlreadyUsesException("Указанное описание уже используется в другой новости!");
         }
 
-        TypeEntity type = typeRepository.findById(typeId).get();
-        note.setNewsType(type);
+        Optional<TypeEntity> typeOptional = typeRepository.findById(typeId);
+        if (typeOptional.isEmpty()) {
+            throw new TypeNotFoundException("!");
+        }
+        note.setNewsType(typeOptional.get());
 
         newsRepository.save(note);
     }
@@ -78,6 +78,15 @@ public class NewsService {
         }
 
         return news;
+    }
+
+    public List<NewsEntity> showAllNews() throws NewsListIsEmptyException {
+        List<NewsEntity> allNews = newsRepository.findAll();
+        if (allNews.isEmpty()) {
+            throw new NewsListIsEmptyException();
+        }
+
+        return allNews;
     }
 
     public NewsEntity updateNewsByHeadline(String oldHeadline, String newHeadline) throws NewsNotFoundException, NewsNameAlreadyExistException {
